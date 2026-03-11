@@ -23,7 +23,6 @@ Materiales, notebooks y recursos de las clases tutoriales de **Analítica de Dat
  ┃ ┣ 📄 1.2 - Pandas.pdf
  ┃ ┣ 📄 1.3 - Visualización Matplotlib y Seaborn.pdf
  ┃ ┣ 📄 Clase 1 - Visualización de Datos.pdf
- ┃ ┣ 📓 clase01_DOCENTE.ipynb
  ┃ ┣ 📓 startups_practica.ipynb
  ┃ ┗ 📄 startups.csv
  ┗ 📄 README.md
