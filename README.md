@@ -54,5 +54,6 @@ git clone https://github.com/ignacio-aracena/Analitica-de-Datos-460.git
 ## Materia
 
 **Analítica de Datos** · Negocios Digitales · Otoño 2026  
-Ignacio Aracena · Juan Costa                                                                  Universidad de San Andrés  
+Ignacio Aracena · Juan Costa                                                                  
+Universidad de San Andrés  
   
