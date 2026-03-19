@@ -268,11 +268,22 @@ resumen_cat['Sales'].plot(kind='barh', ax=axes[0], color='steelblue')
 axes[0].set_title('Ventas totales por categoría')
 axes[0].set_xlabel('Ventas (USD)')
 axes[0].set_ylabel('')
+axes[0].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x/1e3:.0f}K'))
 
 resumen_cat['Profit'].plot(kind='barh', ax=axes[1], color='seagreen')
 axes[1].set_title('Profit total por categoría')
 axes[1].set_xlabel('Profit (USD)')
 axes[1].set_ylabel('')
+axes[1].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x/1e3:.0f}K'))
+
+# Etiquetas de valor al final de cada barra
+for ax, col in zip(axes, ['Sales', 'Profit']):
+    max_val = resumen_cat[col].max()
+    ax.set_xlim(0, max_val * 1.2)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    for i, v in enumerate(resumen_cat[col]):
+        ax.text(v + max_val * 0.02, i, f'${v/1e3:.0f}K', va='center', ha='left', fontsize=10)
 
 plt.tight_layout()
 plt.show()
@@ -288,11 +299,26 @@ plt.show()
 
 | Category | Sales | Profit |
 |---|---|---|
-| Technology | ~836K | ~145K |
-| Furniture | ~742K | ~18K |
-| Office Supplies | ~719K | ~122K |
+| Technology | ~$836K | ~$145K |
+| Furniture | ~$742K | ~$18K |
+| Office Supplies | ~$719K | ~$122K |
 
-**Gráfico:** `plt.subplots(1, 2)` crea una figura con 2 subplots en fila. `kind='barh'` hace barras horizontales — más legibles cuando las etiquetas de categorías son largas.
+**Formatter del eje X:**
+```python
+axes[0].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'${x/1e3:.0f}K'))
+```
+`FuncFormatter` recibe una función `(valor, posición) → string`. Acá divide cada tick por 1000 y le agrega el sufijo `K` — el eje muestra `$100K`, `$200K`, etc. en lugar de `100000`, `200000`. El `_` ignora el argumento de posición que matplotlib pasa automáticamente.
+
+**Etiquetas de barra en formato K:**
+```python
+ax.text(v + max_val * 0.02, i, f'${v/1e3:.0f}K', va='center', ha='left', fontsize=10)
+```
+- `v + max_val * 0.02` → offset dinámico del 2% del valor máximo — mantiene la etiqueta separada del borde independientemente de la escala
+- `f'${v/1e3:.0f}K'` → formato consistente con el eje: `$836K`, `$145K`, etc.
+
+**`set_xlim(0, max_val * 1.2)`:** extiende el eje un 20% más allá del máximo para que las etiquetas no queden cortadas.
+
+**`spines['top'].set_visible(False)` / `spines['right'].set_visible(False)`:** elimina los bordes superior y derecho — reduce ruido visual, aplica la regla "sin ruido" del Paso 4.
 
 ---
 
