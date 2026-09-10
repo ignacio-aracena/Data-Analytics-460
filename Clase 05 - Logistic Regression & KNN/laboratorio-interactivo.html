@@ -1,0 +1,723 @@
+<title>La Recta del ROAS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Karla:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#FCFBF9; --card:#FFF; --ink:#1F262C; --soft:#5F6970; --faint:#959EA6; --line:#E9E5E0;
+  --accent:#DC6633; --accent-bg:#FBEDE5;
+  --model:#2F6FD0; --model-bg:#EAF1FC;
+  --good:#219170; --good-bg:#E4F4EE;
+  --err:#CE4F46; --err-fill:rgba(206,79,70,.15);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111519; --card:#181D22; --ink:#E9EDF0; --soft:#9AA4AC; --faint:#6B757D; --line:#242B31;
+  --accent:#FF9563; --accent-bg:#2B1B12;
+  --model:#78ABF0; --model-bg:#131F30;
+  --good:#48C296; --good-bg:#11241D;
+  --err:#F2867C; --err-fill:rgba(242,134,124,.17);
+}}
+:root[data-theme="dark"]{
+  --bg:#111519; --card:#181D22; --ink:#E9EDF0; --soft:#9AA4AC; --faint:#6B757D; --line:#242B31;
+  --accent:#FF9563; --accent-bg:#2B1B12;
+  --model:#78ABF0; --model-bg:#131F30;
+  --good:#48C296; --good-bg:#11241D;
+  --err:#F2867C; --err-fill:rgba(242,134,124,.17);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Karla",system-ui,sans-serif;font-size:20px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 26px 120px}
+
+h1,h2{font-family:"Fraunces",Georgia,serif;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(3rem,8vw,4.6rem);line-height:1;margin:.08em 0 .3em}
+h2{font-size:clamp(2rem,5.2vw,2.9rem);line-height:1.08;margin:0 0 .2em}
+h3{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:clamp(1.35rem,3.2vw,1.8rem);margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .85em}
+.lede{color:var(--soft);font-size:clamp(1.1rem,2.6vw,1.3rem);margin-bottom:1.1em;max-width:34ch}
+.dek{color:var(--soft);font-size:clamp(1.15rem,3vw,1.45rem);max-width:25ch;line-height:1.35}
+
+header{padding:80px 0 34px}
+.kicker{font-family:"JetBrains Mono",monospace;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:1.2em}
+section{padding:78px 0 0}
+.num{font-family:"JetBrains Mono",monospace;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.6em}
+.num span{color:var(--faint);margin-left:14px}
+
+button{font-family:"Karla",sans-serif;font-weight:700;font-size:18px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);padding:11px 22px;cursor:pointer;transition:all .15s}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.primary:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+button[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+button:disabled{opacity:.55;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+figure{margin:0}
+svg{display:block;width:100%;height:auto}
+
+/* bloque de control pegado al gráfico */
+.panel{margin-top:14px;padding-top:16px;border-top:2px solid var(--line)}
+.ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px 34px}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:16px;color:var(--soft);margin-bottom:2px}
+.ctrl label i{font-style:normal;color:var(--faint);font-size:14px}
+.ctrl label b{font-family:"JetBrains Mono",monospace;font-size:23px;color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px;background:transparent}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px}
+
+.stats{display:flex;flex-wrap:wrap;gap:10px 44px;margin:18px 0 0}
+.stat .k{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block}
+.stat .v{font-family:"JetBrains Mono",monospace;font-size:clamp(28px,5.6vw,42px);font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;display:block;line-height:1.15}
+.stat.a .v{color:var(--accent)} .stat.m .v{color:var(--model)} .stat.g .v{color:var(--good)} .stat.e .v{color:var(--err)}
+
+.steps{list-style:none;margin:22px 0 0;padding:0}
+.steps li{display:grid;grid-template-columns:48px 1fr;gap:18px;align-items:start;padding:15px 0;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:0}
+.steps .n{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:19px;color:var(--accent);background:var(--accent-bg);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.steps .big{font-size:clamp(1.05rem,2.5vw,1.25rem);margin:0 0 .1em;line-height:1.35}
+.steps .sm{font-size:16.5px;color:var(--soft);margin:0}
+.mn{font-family:"JetBrains Mono",monospace;font-weight:700;font-variant-numeric:tabular-nums}
+.mn.a{color:var(--accent)} .mn.m{color:var(--model)} .mn.g{color:var(--good)} .mn.e{color:var(--err)}
+
+.squash{margin:20px 0 24px}
+.srow{display:grid;grid-template-columns:150px 1fr 84px;gap:16px;align-items:center;margin-bottom:12px}
+.srow .z{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:18px;color:var(--model);text-align:right}
+.srow .track{height:24px;background:var(--line);border-radius:999px;overflow:hidden}
+.srow .fill{height:100%;background:var(--good);border-radius:999px}
+.srow .p{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:21px;color:var(--good);font-variant-numeric:tabular-nums}
+
+.note{background:var(--accent-bg);border-radius:18px;padding:22px 28px;margin:26px 0}
+.note.m{background:var(--model-bg)} .note.g{background:var(--good-bg)}
+.note .tag{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;display:block;margin-bottom:.4em}
+.note.m .tag{color:var(--model)} .note.g .tag{color:var(--good)}
+.note p{font-size:18.5px;margin-bottom:.55em} .note p:last-child{margin-bottom:0}
+
+.tablewrap{overflow-x:auto;margin:22px 0}
+table{border-collapse:collapse;width:100%;font-family:"JetBrains Mono",monospace;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+th,td{padding:8px 26px 8px 0;text-align:right;white-space:nowrap}
+th{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:500;padding-bottom:10px}
+td{border-top:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;color:var(--faint)}
+
+.predict{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin:20px 0 0}
+.field{flex:1 1 170px}
+.field span{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:6px}
+input[type=text],input[type=number]{width:100%;padding:13px 17px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:700}
+.status{font-family:"JetBrains Mono",monospace;font-size:15px;color:var(--faint);margin:12px 0 0}
+.hist{margin-top:24px}
+.histbar{display:grid;grid-template-columns:96px 1fr 34px;gap:14px;align-items:center;font-family:"JetBrains Mono",monospace;font-size:15px;margin-bottom:6px;font-variant-numeric:tabular-nums;color:var(--faint)}
+.histbar .bar{height:18px;background:var(--accent);border-radius:99px;min-width:3px;opacity:.9}
+.histbar .cnt{text-align:right}
+
+
+.cases{margin:26px 0}
+.case{display:grid;grid-template-columns:250px 1fr;gap:22px;padding:14px 0;border-top:1px solid var(--line);font-size:18.5px}
+.case span{color:var(--soft)}
+@media(max-width:600px){.case{grid-template-columns:1fr;gap:2px}}
+.punch{font-family:"Fraunces",Georgia,serif;font-size:clamp(1.6rem,4.2vw,2.3rem);line-height:1.25;font-weight:700;margin:48px 0 0;max-width:21ch;text-wrap:balance}
+.punch em{font-style:normal;color:var(--accent)}
+footer{margin-top:60px;font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">Negocios Digitales · 50 min</div>
+  <h1>La recta del ROAS</h1>
+  <p class="dek">Doce semanas de una tienda. La próxima invertimos USD&nbsp;2.500 en ads. ¿Cuánto facturamos?</p>
+</header>
+
+<!-- 01 -->
+<section>
+  <div class="num">01 <span>Estimación a ojo</span></div>
+  <h2>Antes del modelo</h2>
+  <p class="lede">Observá los datos y estimá el valor. Cargá una estimación por alumno.</p>
+
+  <div class="tablewrap">
+    <table><thead><tr><th>Sem</th><th>Inversión</th><th>Facturación</th></tr></thead><tbody id="tbl"></tbody></table>
+  </div>
+
+  <div class="predict">
+    <div class="field"><span>Nombre</span><input type="text" id="nom" placeholder="Cami" autocomplete="off" maxlength="24"></div>
+    <div class="field"><span>Estimación</span><input type="number" id="pred" placeholder="11000" step="100"></div>
+    <button class="primary" id="enviar">Cargar</button>
+  </div>
+  <p class="status" id="predStatus">Inversión de la próxima semana: $2.500.</p>
+  <div class="hist" id="hist"></div>
+  <div class="actions" id="revealRow" hidden>
+    <button id="verdad">Ver el resultado real</button>
+    <button id="borrar">Reiniciar</button>
+  </div>
+
+  <div class="note" id="notaClase" hidden>
+    <span class="tag">Lo que acabás de hacer</span>
+    <p>Detectaste una relación entre dos variables y la proyectaste a un caso nuevo. Eso es una regresión. Lo que sigue es formalizarla.</p>
+  </div>
+
+</section>
+
+<!-- 02 -->
+<section>
+  <div class="num">02 <span>Ajuste manual</span></div>
+  <h2>¿Dónde va la recta?</h2>
+  <p class="lede">Cada línea punteada roja es la distancia entre un dato real y tu predicción.</p>
+
+  <figure><svg id="scatter" viewBox="0 0 760 440" role="img" aria-label="Inversión en ads contra facturación con la recta ajustable"></svg></figure>
+
+  <div class="panel">
+    <div class="ctrls">
+      <div class="ctrl"><label for="sA">Intercepto <i>dónde arranca</i> <b id="vA">$2.000</b></label><input type="range" id="sA" min="-4000" max="10000" step="50" value="2000"></div>
+      <div class="ctrl"><label for="sB">Pendiente <i>cuánto sube</i> <b id="vB">4,50</b></label><input type="range" id="sB" min="0" max="9" step="0.01" value="4.5"></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="ajustar">Ajustar automáticamente</button>
+      <button id="cuadrados" aria-pressed="false">Ver cuadrados</button>
+    </div>
+    <div class="stats">
+      <div class="stat a"><span class="k">Tu error</span><span class="v" id="roErr">—</span></div>
+      <div class="stat"><span class="k">Mejor marca</span><span class="v" id="roBest">—</span></div>
+      <div class="stat m"><span class="k">Mínimo posible</span><span class="v" id="roOpt">—</span></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:50px">Cómo se calcula ese error</h3>
+  <ol class="steps">
+    <li><span class="n">1</span><div>
+      <p class="big">La semana 5 facturó <b class="mn g">11.400</b>. Tu recta predice <b class="mn a" id="s1yhat">11.900</b>.</p>
+      <p class="sm">La diferencia entre ambos es el residuo: <b class="mn e" id="s2res">500</b>.</p></div></li>
+    <li><span class="n">2</span><div>
+      <p class="big">Ese residuo se eleva al cuadrado: <b class="mn e" id="s3sq">500 × 500</b>.</p>
+      <p class="sm">Activá «Ver cuadrados» y aparece dibujado como área sobre el gráfico.</p></div></li>
+    <li><span class="n">3</span><div>
+      <p class="big">Se promedian las 12 semanas y se toma la raíz: <b class="mn a" id="s5rmse">$2.470</b>.</p>
+      <p class="sm">Se interpreta así: en una semana cualquiera, la recta se desvía por ese monto.</p></div></li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">Por qué al cuadrado</span>
+    <p>Sin elevar al cuadrado, un residuo de <b>+500</b> y otro de <b>−500</b> se anulan. Y desviarse <b>1.000</b> no es el doble de grave que desviarse <b>500</b>: es <strong>cuatro veces</strong> peor.</p>
+  </div>
+
+</section>
+
+<!-- 03 -->
+<section>
+  <div class="num">03 <span>Interpretación</span></div>
+  <h2>Qué significan los coeficientes</h2>
+  <p class="lede">Los dos parámetros que ajustaste tienen un nombre concreto en marketing.</p>
+
+  <figure><svg id="anat" viewBox="0 0 760 400" role="img" aria-label="La recta ajustada con el intercepto y la pendiente señalados"></svg></figure>
+
+  <ol class="steps" style="margin-top:26px">
+    <li><span class="n">A</span><div>
+      <p class="big">Intercepto: <b class="mn m">$4.038</b>.</p>
+      <p class="sm">Facturación con inversión cero. Es la demanda orgánica de la marca.</p></div></li>
+    <li><span class="n">B</span><div>
+      <p class="big">Pendiente: por cada <b class="mn m">$1.000</b> invertidos, la facturación sube <b class="mn a">$3.180</b>.</p>
+      <p class="sm">Ese es el retorno incremental de la publicidad.</p></div></li>
+  </ol>
+
+  <div class="stats" style="margin-top:34px">
+    <div class="stat a"><span class="k">Retorno incremental</span><span class="v">3,18×</span></div>
+    <div class="stat m"><span class="k">ROAS que reporta la plataforma</span><span class="v">5,31×</span></div>
+  </div>
+
+  <div class="note">
+    <span class="tag">El sesgo del ROAS reportado</span>
+    <p>La plataforma divide facturación total sobre inversión total y arroja <strong>5,31×</strong>, atribuyéndose la demanda orgánica que existía igual. El retorno de cada peso incremental es <strong>3,18×</strong>: un 40% menos. Esa brecha es el intercepto.</p>
+  </div>
+
+</section>
+
+<!-- 04 -->
+<section>
+  <div class="num">04 <span>Límites</span></div>
+  <h2>Dónde falla el modelo</h2>
+  <p class="lede">Todo modelo es válido solo dentro de un rango.</p>
+
+  <figure><svg id="brk" viewBox="0 0 760 400" role="img" aria-label="El mismo ajuste con y sin una semana atípica"></svg></figure>
+
+  <div class="panel">
+    <div class="actions" style="margin-top:0">
+      <button id="outlier" aria-pressed="false">Sumar una semana atípica</button>
+      <span class="status" id="outStatus" style="margin:0">Black Friday: $3.200 de inversión, $42.000 de facturación.</span>
+    </div>
+    <div class="stats">
+      <div class="stat m"><span class="k">Intercepto</span><span class="v" id="brkA">$4.038</span></div>
+      <div class="stat a"><span class="k">Pendiente</span><span class="v" id="brkB">3,18</span></div>
+    </div>
+  </div>
+
+  <div class="note" id="outNota" hidden><span class="tag">Un solo dato</span><p id="outTxt"></p></div>
+
+  <div class="panel" style="margin-top:34px">
+    <div class="predict" style="margin-top:0">
+      <div class="field"><span>Simular inversión</span><input type="number" id="extra" value="2500" step="500" min="0"></div>
+      <div class="stat a" style="flex:1 1 200px"><span class="k">Predicción</span><span class="v" id="extraOut">—</span></div>
+    </div>
+    <p class="status" id="extraWarn">Probá 2.500. Después probá 200.000.</p>
+  </div>
+
+  <div class="note">
+    <span class="tag">Los dos límites</span>
+    <p><strong>Sensibilidad a valores atípicos.</strong> Un dato extremo desplaza el ajuste completo.</p>
+    <p><strong>Extrapolación.</strong> Fuera del rango observado el modelo no tiene evidencia. En la práctica los canales se saturan y la relación deja de ser lineal.</p>
+  </div>
+
+</section>
+
+<!-- 05 -->
+<section>
+  <div class="num">05 <span>Clasificación</span></div>
+  <h2>Cuando la respuesta es binaria</h2>
+  <p class="lede">Otra pregunta: ¿este cliente va a darse de baja?</p>
+
+  <p>Una recta puede devolver <b class="mn e">140%</b> o <b class="mn e">−30%</b>. Como probabilidad no existe. Hace falta una función que comprima cualquier valor dentro de 0 y 100.</p>
+
+  <div class="squash">
+    <div class="srow"><span class="z">entra +4</span><div class="track"><div class="fill" style="width:98%"></div></div><span class="p">98%</span></div>
+    <div class="srow"><span class="z">entra 0</span><div class="track"><div class="fill" style="width:50%"></div></div><span class="p">50%</span></div>
+    <div class="srow"><span class="z">entra −4</span><div class="track"><div class="fill" style="width:2%"></div></div><span class="p">2%</span></div>
+  </div>
+  <p class="lede" style="max-width:46ch">Por grande que sea el valor de entrada nunca alcanza 100; por negativo que sea nunca baja de 0. Eso es la <strong>función logística</strong>.</p>
+
+  <figure style="margin-top:38px"><svg id="logit" viewBox="0 0 760 380" role="img" aria-label="Probabilidad de renovación según días sin actividad"></svg></figure>
+
+  <div class="panel">
+    <div class="ctrls">
+      <div class="ctrl"><label for="sT">Umbral <i>enviar cupón si baja de</i> <b id="vT">50%</b></label><input type="range" id="sT" min="5" max="95" step="1" value="50"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="k">Cupones</span><span class="v" id="roCup">—</span></div>
+      <div class="stat"><span class="k">Bajas</span><span class="v" id="roPerd">—</span></div>
+      <div class="stat a"><span class="k">Costo total</span><span class="v" id="roCosto">—</span></div>
+    </div>
+    <p class="status">Cupón $10 · baja $120 de valor de vida. Buscá el costo mínimo.</p>
+  </div>
+
+  <div class="note">
+    <span class="tag">El umbral es una decisión de negocio</span>
+    <p>Una baja cuesta <strong>doce veces</strong> más que un cupón innecesario: conviene enviar de más. El modelo entrega una probabilidad; <strong>el punto de corte sale de los costos del negocio.</strong></p>
+  </div>
+
+</section>
+
+<!-- 06 -->
+<section>
+  <div class="num">06 <span>Vecinos cercanos</span></div>
+  <h2>Predecir sin fórmula</h2>
+  <p class="lede">Otra estrategia: buscar los casos más parecidos y copiarles la respuesta.</p>
+
+  <figure><svg id="knn" viewBox="0 0 760 470" role="img" aria-label="Visitantes de un e-commerce según tiempo en el sitio y páginas vistas, con el mapa de decisión de k vecinos"></svg></figure>
+
+  <div class="panel">
+    <div class="ctrls">
+      <div class="ctrl"><label for="sK">Vecinos consultados <i>el valor de k</i> <b id="vK">5</b></label><input type="range" id="sK" min="1" max="15" step="2" value="5"></div>
+    </div>
+    <div class="stats">
+      <div class="stat g"><span class="k">Votan compra</span><span class="v" id="knnYes">—</span></div>
+      <div class="stat"><span class="k">Votan no</span><span class="v" id="knnNo">—</span></div>
+      <div class="stat a"><span class="k">Predicción</span><span class="v" id="knnPred">—</span></div>
+    </div>
+    <p class="status">Tocá cualquier parte del gráfico para mover al visitante nuevo.</p>
+  </div>
+
+  <ol class="steps" style="margin-top:44px">
+    <li><span class="n">1</span><div>
+      <p class="big">Llega un visitante nuevo, el punto naranja.</p>
+      <p class="sm">Sabemos cuánto navegó, no sabemos si va a comprar.</p></div></li>
+    <li><span class="n">2</span><div>
+      <p class="big">Se buscan los <b class="mn a" id="k2">5</b> visitantes históricos más parecidos.</p>
+      <p class="sm">Parecido significa cercano en el gráfico. Si un eje fuera en pesos y otro en minutos habría que normalizarlos antes, o el de números grandes domina la distancia.</p></div></li>
+    <li><span class="n">3</span><div>
+      <p class="big">Votan entre ellos y gana la mayoría.</p>
+      <p class="sm">No hay nada más. Ese es el modelo completo.</p></div></li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">Qué muestra el fondo</span>
+    <p>El color de fondo es lo que el modelo predeciría en cada punto del plano. Con <b>k = 1</b> se llena de islas: cada caso atípico gobierna su propia zona. Subiendo k la frontera se suaviza y los casos raros dejan de mandar.</p>
+  </div>
+
+  <div class="note m">
+    <span class="tag">La diferencia con la regresión</span>
+    <p>La regresión resume todo en dos coeficientes y después descarta los datos. <strong>KNN no resume nada</strong>: guarda la base entera y compara recién cuando le preguntás. Por eso no tiene entrenamiento, y por eso se vuelve lento con millones de registros.</p>
+  </div>
+</section>
+
+<!-- 07 -->
+<section>
+  <div class="num">07 <span>Cierre</span></div>
+  <h2>Dónde se aplica</h2>
+  <p class="lede">No es el ejercicio previo a lo que importa. Es lo que decide.</p>
+
+  <div class="cases">
+    <div class="case"><b>Aprobación de crédito</b><span>Un puntaje y un umbral.</span></div>
+    <div class="case"><b>Autorización de pagos</b><span>Probabilidad de fraude.</span></div>
+    <div class="case"><b>Precio de envío</b><span>Según hora, zona y demanda.</span></div>
+    <div class="case"><b>Triage hospitalario</b><span>Alerta temprana de sepsis.</span></div>
+    <div class="case"><b>Segmentación</b><span>Quién compra, quién se da de baja.</span></div>
+    <div class="case"><b>Cuando falla</b><span>COMPAS: reincidencia judicial con sesgo documentado.</span></div>
+  </div>
+
+  <p class="punch">La mayoría de los modelos que deciden sobre tu vida <em>no son ChatGPT</em>. Son esto.</p>
+
+
+  <footer>Datos sintéticos · Cálculos reales</footer>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var fmt=function(n){return "$"+Math.round(n).toLocaleString("es-AR")};
+var mil=function(n){return Math.round(n).toLocaleString("es-AR")};
+var dec=function(n){return (+n).toFixed(2).replace(".",",")};
+var ADS=[800,1200,1500,1000,2200,1800,2600,3000,1400,2400,2800,2000];
+var SAL=[6900,7500,9100,7050,11400,9600,12000,13800,8300,11900,12600,10500];
+var OUT_X=3200,OUT_Y=42000,TRUE_ANSWER=12100;
+
+var rows="";
+for(var i=0;i<ADS.length;i++)rows+="<tr><td>"+(i+1)+"</td><td>"+fmt(ADS[i])+"</td><td>"+fmt(SAL[i])+"</td></tr>";
+document.getElementById("tbl").innerHTML=rows;
+
+function ols(xs,ys){
+  var n=xs.length,mx=0,my=0,i;
+  for(i=0;i<n;i++){mx+=xs[i];my+=ys[i]} mx/=n;my/=n;
+  var num=0,den=0;
+  for(i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)*(xs[i]-mx)}
+  var b=den?num/den:0;
+  return {a:my-b*mx,b:b,mx:mx,my:my};
+}
+function rmse(xs,ys,a,b){var s=0;for(var i=0;i<xs.length;i++){var e=ys[i]-(a+b*xs[i]);s+=e*e}return Math.sqrt(s/xs.length)}
+
+var NS="http://www.w3.org/2000/svg",MONO="JetBrains Mono, monospace",SANS="Karla, sans-serif";
+function el(t,at){var e=document.createElementNS(NS,t);for(var k in at)e.setAttribute(k,at[k]);return e}
+function txt(e,s){e.textContent=s;return e}
+
+/* motor de gráfico reutilizable */
+function plot(sv,cfg){
+  var W=cfg.W,H=cfg.H,M=cfg.M,X=cfg.X,Y=cfg.Y,a=cfg.a,b=cfg.b;
+  var xmax=cfg.xmax,ymax=cfg.ymax,i;
+  var px=function(v){return M.l+(v/xmax)*(W-M.l-M.r)};
+  var py=function(v){return H-M.b-(v/ymax)*(H-M.t-M.b)};
+  while(sv.firstChild)sv.removeChild(sv.firstChild);
+  var uid=cfg.id,defs=el("defs"),cp=el("clipPath",{id:uid});
+  cp.appendChild(el("rect",{x:M.l,y:M.t,width:W-M.l-M.r,height:H-M.t-M.b}));
+  defs.appendChild(cp);sv.appendChild(defs);
+
+  for(i=0;i<cfg.gy.length;i++){
+    sv.appendChild(el("line",{x1:M.l,y1:py(cfg.gy[i]),x2:W-M.r,y2:py(cfg.gy[i]),stroke:"var(--line)","stroke-width":1.5}));
+    sv.appendChild(txt(el("text",{x:M.l-14,y:py(cfg.gy[i])+6,"text-anchor":"end",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),"$"+(cfg.gy[i]/1000)+"k"));
+  }
+  for(i=0;i<=3000;i+=1000)
+    sv.appendChild(txt(el("text",{x:px(i),y:H-M.b+30,"text-anchor":"middle",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),"$"+(i/1000)+"k"));
+  sv.appendChild(txt(el("text",{x:(M.l+W-M.r)/2,y:H-10,"text-anchor":"middle",fill:"var(--faint)","font-size":14,"letter-spacing":"0.14em","font-family":MONO}),"INVERSIÓN EN ADS"));
+  sv.appendChild(txt(el("text",{x:-((M.t+H-M.b)/2),y:20,"text-anchor":"middle",fill:"var(--faint)","font-size":14,"letter-spacing":"0.14em","font-family":MONO,transform:"rotate(-90)"}),"FACTURACIÓN"));
+
+  var g=el("g",{"clip-path":"url(#"+uid+")"});
+  if(cfg.squares)for(i=0;i<X.length;i++){
+    var p1=py(Y[i]),p2=py(a+b*X[i]),side=Math.abs(p1-p2);
+    if(side<1.5)continue;
+    g.appendChild(el("rect",{x:px(X[i]),y:Math.min(p1,p2),width:side,height:side,fill:"var(--err-fill)",stroke:"var(--err)","stroke-width":1}));
+  }
+  if(cfg.residuals)for(i=0;i<X.length;i++)
+    g.appendChild(el("line",{x1:px(X[i]),y1:py(Y[i]),x2:px(X[i]),y2:py(a+b*X[i]),stroke:"var(--err)","stroke-width":2.4,"stroke-dasharray":"5 4"}));
+  g.appendChild(el("line",{x1:px(0),y1:py(a),x2:px(xmax),y2:py(a+b*xmax),stroke:"var(--accent)","stroke-width":4,"stroke-linecap":"round"}));
+  for(i=0;i<X.length;i++){
+    var isOut=cfg.markLast&&i===X.length-1;
+    g.appendChild(el("circle",{cx:px(X[i]),cy:py(Y[i]),r:isOut?9:7,fill:isOut?"var(--err)":"var(--model)",stroke:"var(--bg)","stroke-width":2.5}));
+  }
+  sv.appendChild(g);
+  return {px:px,py:py,g:g};
+}
+
+/* --- 02 --- */
+var SV=document.getElementById("scatter"),sA=document.getElementById("sA"),sB=document.getElementById("sB");
+var showSq=false,best=Infinity;
+function drawScatter(){
+  var a=+sA.value,b=+sB.value;
+  plot(SV,{id:"c2",W:760,H:440,M:{l:92,r:22,t:24,b:56},X:ADS,Y:SAL,a:a,b:b,
+    xmax:3400,ymax:15000,gy:[0,3000,6000,9000,12000,15000],squares:showSq,residuals:true});
+  var e=rmse(ADS,SAL,a,b),o=ols(ADS,SAL);
+  if(e<best)best=e;
+  document.getElementById("roErr").textContent=fmt(e);
+  document.getElementById("roBest").textContent=fmt(best);
+  document.getElementById("roOpt").textContent=fmt(rmse(ADS,SAL,o.a,o.b));
+  document.getElementById("vA").textContent=fmt(a);
+  document.getElementById("vB").textContent=dec(b);
+  var yh=a+b*2200,res=Math.abs(11400-yh);
+  document.getElementById("s1yhat").textContent=mil(yh);
+  document.getElementById("s2res").textContent=mil(res);
+  document.getElementById("s3sq").textContent=mil(res)+" × "+mil(res);
+  document.getElementById("s5rmse").textContent=fmt(e);
+}
+sA.addEventListener("input",drawScatter);
+sB.addEventListener("input",drawScatter);
+document.getElementById("cuadrados").addEventListener("click",function(){
+  showSq=!showSq;this.setAttribute("aria-pressed",String(showSq));
+  this.textContent=showSq?"Ocultar cuadrados":"Ver cuadrados";
+  drawScatter();
+});
+document.getElementById("ajustar").addEventListener("click",function(){
+  var o=ols(ADS,SAL),a0=+sA.value,b0=+sB.value,t0=null,D=1100;
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){sA.value=o.a;sB.value=o.b;drawScatter();return}
+  function step(ts){
+    if(t0===null)t0=ts;
+    var k=Math.min((ts-t0)/D,1),e=1-Math.pow(1-k,3);
+    sA.value=a0+(o.a-a0)*e;sB.value=b0+(o.b-b0)*e;drawScatter();
+    if(k<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+});
+
+/* --- 03 anatomía --- */
+function drawAnat(){
+  var o=ols(ADS,SAL);
+  var r=plot(document.getElementById("anat"),{id:"c3",W:760,H:400,M:{l:92,r:22,t:26,b:56},
+    X:ADS,Y:SAL,a:o.a,b:o.b,xmax:3400,ymax:15000,gy:[0,3000,6000,9000,12000,15000]});
+  var px=r.px,py=r.py,g=r.g,AV=document.getElementById("anat");
+  AV.appendChild(el("circle",{cx:px(0),cy:py(o.a),r:11,fill:"var(--model)",stroke:"var(--bg)","stroke-width":3}));
+  AV.appendChild(txt(el("text",{x:px(0)+20,y:py(o.a)-16,fill:"var(--model)","font-size":19,"font-weight":700,"font-family":MONO}),"A · "+fmt(o.a)));
+  AV.appendChild(txt(el("text",{x:px(0)+20,y:py(o.a)+6,fill:"var(--soft)","font-size":15,"font-family":SANS}),"con inversión cero"));
+  var x1=1600,x2=2600,y1=o.a+o.b*x1,y2=o.a+o.b*x2;
+  AV.appendChild(el("line",{x1:px(x1),y1:py(y1),x2:px(x2),y2:py(y1),stroke:"var(--model)","stroke-width":3,"stroke-dasharray":"7 5"}));
+  AV.appendChild(el("line",{x1:px(x2),y1:py(y1),x2:px(x2),y2:py(y2),stroke:"var(--accent)","stroke-width":3,"stroke-dasharray":"7 5"}));
+  AV.appendChild(txt(el("text",{x:(px(x1)+px(x2))/2,y:py(y1)+28,"text-anchor":"middle",fill:"var(--model)","font-size":18,"font-weight":700,"font-family":MONO}),"+$1.000"));
+  AV.appendChild(txt(el("text",{x:px(x2)+14,y:(py(y1)+py(y2))/2+4,fill:"var(--accent)","font-size":18,"font-weight":700,"font-family":MONO}),"B · +"+fmt(o.b*1000)));
+}
+
+/* --- 04 límites --- */
+var withOutlier=false;
+function bx(){return withOutlier?ADS.concat([OUT_X]):ADS}
+function by(){return withOutlier?SAL.concat([OUT_Y]):SAL}
+function drawBrk(){
+  var o=ols(bx(),by());
+  plot(document.getElementById("brk"),{id:"c4",W:760,H:400,M:{l:92,r:22,t:26,b:56},
+    X:bx(),Y:by(),a:o.a,b:o.b,xmax:3400,ymax:withOutlier?46000:15000,
+    gy:withOutlier?[0,10000,20000,30000,40000]:[0,3000,6000,9000,12000,15000],markLast:withOutlier});
+  document.getElementById("brkA").textContent=fmt(o.a);
+  document.getElementById("brkB").textContent=dec(o.b);
+  updateExtra(o);
+}
+function updateExtra(o){
+  var v=+document.getElementById("extra").value||0,p=o.a+o.b*v;
+  document.getElementById("extraOut").textContent=fmt(Math.max(p,0));
+  var w=document.getElementById("extraWarn");
+  if(v>3000){w.textContent="El modelo nunca observó una inversión de "+fmt(v)+". Extrapola sin evidencia.";w.style.color="var(--err)"}
+  else{w.textContent="Dentro del rango observado ($800 – $3.000).";w.style.color="var(--faint)"}
+}
+document.getElementById("extra").addEventListener("input",function(){updateExtra(ols(bx(),by()))});
+document.getElementById("outlier").addEventListener("click",function(){
+  withOutlier=!withOutlier;this.setAttribute("aria-pressed",String(withOutlier));
+  this.textContent=withOutlier?"Quitar la semana atípica":"Sumar una semana atípica";
+  var o=ols(bx(),by()),n=document.getElementById("outNota");
+  if(withOutlier){
+    n.hidden=false;
+    document.getElementById("outTxt").innerHTML="El intercepto pasó de <strong>$4.038</strong> a <strong>"+fmt(o.a)+"</strong> y la pendiente de <strong>3,18</strong> a <strong>"+dec(o.b)+"</strong>. Con intercepto negativo el modelo afirma que sin inversión la tienda pierde plata todas las semanas. Lo produjo un único registro.";
+    document.getElementById("outStatus").textContent="Mirá cómo se torció el ajuste y explotó la escala.";
+  }else{
+    n.hidden=true;
+    document.getElementById("outStatus").textContent="Black Friday: $3.200 de inversión, $42.000 de facturación.";
+  }
+  drawBrk();
+});
+
+/* --- 05 logística --- */
+var LW=-0.2737,LB=4.0981;
+var DIAS=[1,2,3,4,5,6,7,8,9,10,12,14,15,17,18,20,22,25,28,30,33,35,40,45];
+var REN=[1,1,1,1,1,1,1,0,1,1,1,0,1,0,0,1,0,0,0,0,0,0,0,0];
+function sig(d){return 1/(1+Math.exp(-(LW*d+LB)))}
+var LV=document.getElementById("logit"),LM={l:82,r:22,t:26,b:56},L2=760,LH=380;
+var sT=document.getElementById("sT");
+function drawLogit(){
+  var th=+sT.value/100,xmax=48,i;
+  var px=function(v){return LM.l+(v/xmax)*(L2-LM.l-LM.r)};
+  var py=function(v){return LH-LM.b-v*(LH-LM.t-LM.b)};
+  while(LV.firstChild)LV.removeChild(LV.firstChild);
+  var gy=[0,.25,.5,.75,1];
+  for(i=0;i<gy.length;i++){
+    LV.appendChild(el("line",{x1:LM.l,y1:py(gy[i]),x2:L2-LM.r,y2:py(gy[i]),stroke:"var(--line)","stroke-width":1.5}));
+    LV.appendChild(txt(el("text",{x:LM.l-14,y:py(gy[i])+6,"text-anchor":"end",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),Math.round(gy[i]*100)+"%"));
+  }
+  for(i=0;i<=45;i+=15)
+    LV.appendChild(txt(el("text",{x:px(i),y:LH-LM.b+30,"text-anchor":"middle",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),i+" días"));
+  LV.appendChild(txt(el("text",{x:(LM.l+L2-LM.r)/2,y:LH-10,"text-anchor":"middle",fill:"var(--faint)","font-size":14,"letter-spacing":"0.14em","font-family":MONO}),"DÍAS SIN ACTIVIDAD"));
+
+  var cut=Math.max(0,Math.min(xmax,(LB-Math.log(th/(1-th)))/(-LW)));
+  LV.appendChild(el("rect",{x:px(cut),y:LM.t,width:Math.max(0,px(xmax)-px(cut)),height:LH-LM.t-LM.b,fill:"var(--accent-bg)"}));
+  LV.appendChild(el("line",{x1:px(cut),y1:LM.t,x2:px(cut),y2:LH-LM.b,stroke:"var(--accent)","stroke-width":3,"stroke-dasharray":"7 5"}));
+  LV.appendChild(txt(el("text",{x:px(cut)+14,y:LM.t+22,fill:"var(--accent)","font-size":18,"font-weight":700,"font-family":MONO}),"← cupón"));
+  var d="",first=true;
+  for(i=0;i<=xmax;i+=.5){d+=(first?"M":"L")+px(i).toFixed(1)+" "+py(sig(i)).toFixed(1);first=false}
+  LV.appendChild(el("path",{d:d,fill:"none",stroke:"var(--model)","stroke-width":4,"stroke-linecap":"round"}));
+  var cup=0,perd=0;
+  for(i=0;i<DIAS.length;i++){
+    var p=sig(DIAS[i]),send=p<th;
+    if(send)cup++;
+    if(!send&&REN[i]===0)perd++;
+    LV.appendChild(el("circle",{cx:px(DIAS[i]),cy:py(REN[i]),r:6,fill:REN[i]?"var(--good)":"var(--err)",stroke:"var(--bg)","stroke-width":2}));
+  }
+  document.getElementById("roCup").textContent=cup;
+  document.getElementById("roPerd").textContent=perd;
+  document.getElementById("roCosto").textContent=fmt(cup*10+perd*120);
+  document.getElementById("vT").textContent=Math.round(th*100)+"%";
+}
+sT.addEventListener("input",drawLogit);
+
+
+/* --- 06 KNN --- */
+var KMIN=[0.5,1,1.5,2,1,2.5,3,2,3.5,4,1.5,5,4.5,3,6,8,
+          7,8,6.5,9,7.5,10,8.5,6,9.5,11,5.5,10.5,7,4];
+var KPAG=[2,1,3,2,4,1,3,5,2,4,6,2,5,7,3,4,
+          12,9,14,11,8,13,15,10,7,12,11,9,16,9];
+var KCLS=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          1,1,1,1,1,1,1,1,1,1,1,1,1,1];
+var KV=document.getElementById("knn"),KM={l:88,r:24,t:26,b:60},KW=760,KH=470;
+var XMAX=12,YMAX=20,qx=5.4,qy=8.6;
+var sK=document.getElementById("sK");
+function kpx(v){return KM.l+(v/XMAX)*(KW-KM.l-KM.r)}
+function kpy(v){return KH-KM.b-(v/YMAX)*(KH-KM.t-KM.b)}
+var KPX=[],KPY=[];
+(function(){for(var i=0;i<KMIN.length;i++){KPX.push(kpx(KMIN[i]));KPY.push(kpy(KPAG[i]))}})();
+function vote(cx,cy,k){
+  var d=[],i;
+  for(i=0;i<KMIN.length;i++){
+    var dx=KPX[i]-cx,dy=KPY[i]-cy;
+    d.push({i:i,d:dx*dx+dy*dy,c:KCLS[i]});
+  }
+  d.sort(function(a,b){return a.d-b.d});
+  var yes=0;
+  for(i=0;i<k&&i<d.length;i++)if(d[i].c===1)yes++;
+  return {yes:yes,no:Math.min(k,d.length)-yes,near:d.slice(0,k)};
+}
+function drawKnn(){
+  var k=+sK.value,i,j;
+  while(KV.firstChild)KV.removeChild(KV.firstChild);
+  var defs=el("defs"),cp=el("clipPath",{id:"ck"});
+  cp.appendChild(el("rect",{x:KM.l,y:KM.t,width:KW-KM.l-KM.r,height:KH-KM.t-KM.b}));
+  defs.appendChild(cp);KV.appendChild(defs);
+  var g=el("g",{"clip-path":"url(#ck)"});
+
+  /* mapa de decisión */
+  var step=16;
+  for(i=KM.l;i<KW-KM.r;i+=step)for(j=KM.t;j<KH-KM.b;j+=step){
+    var v=vote(i+step/2,j+step/2,k),tot=v.yes+v.no;
+    if(!tot)continue;
+    var frac=v.yes/tot,win=frac>=.5;
+    var conf=Math.abs(frac-.5)*2;
+    g.appendChild(el("rect",{x:i,y:j,width:step+.5,height:step+.5,
+      fill:win?"var(--good)":"var(--err)",opacity:(0.05+0.16*conf).toFixed(3)}));
+  }
+
+  /* ejes */
+  for(i=0;i<=YMAX;i+=5){
+    g.appendChild(el("line",{x1:KM.l,y1:kpy(i),x2:KW-KM.r,y2:kpy(i),stroke:"var(--line)","stroke-width":1,opacity:.5}));
+    KV.appendChild(txt(el("text",{x:KM.l-14,y:kpy(i)+6,"text-anchor":"end",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),i));
+  }
+  for(i=0;i<=XMAX;i+=3)
+    KV.appendChild(txt(el("text",{x:kpx(i),y:KH-KM.b+30,"text-anchor":"middle",fill:"var(--faint)","font-size":16,"font-family":MONO,"font-weight":500}),i+"m"));
+  KV.appendChild(txt(el("text",{x:(KM.l+KW-KM.r)/2,y:KH-12,"text-anchor":"middle",fill:"var(--faint)","font-size":14,"letter-spacing":"0.14em","font-family":MONO}),"MINUTOS EN EL SITIO"));
+  KV.appendChild(txt(el("text",{x:-((KM.t+KH-KM.b)/2),y:20,"text-anchor":"middle",fill:"var(--faint)","font-size":14,"letter-spacing":"0.14em","font-family":MONO,transform:"rotate(-90)"}),"PÁGINAS VISTAS"));
+
+  var r=vote(kpx(qx),kpy(qy),k);
+
+  /* radio que encierra a los vecinos */
+  if(r.near.length){
+    var rad=Math.sqrt(r.near[r.near.length-1].d)+9;
+    g.appendChild(el("circle",{cx:kpx(qx),cy:kpy(qy),r:rad,fill:"none",
+      stroke:"var(--accent)","stroke-width":2,"stroke-dasharray":"6 5",opacity:.75}));
+  }
+  /* líneas a los vecinos */
+  for(i=0;i<r.near.length;i++){
+    var n=r.near[i].i;
+    g.appendChild(el("line",{x1:kpx(qx),y1:kpy(qy),x2:kpx(KMIN[n]),y2:kpy(KPAG[n]),
+      stroke:"var(--accent)","stroke-width":1.6,opacity:.5}));
+  }
+  /* puntos */
+  var sel={};
+  for(i=0;i<r.near.length;i++)sel[r.near[i].i]=1;
+  for(i=0;i<KMIN.length;i++){
+    var isN=sel[i];
+    g.appendChild(el("circle",{cx:kpx(KMIN[i]),cy:kpy(KPAG[i]),r:isN?9:6.5,
+      fill:KCLS[i]?"var(--good)":"var(--err)",stroke:isN?"var(--accent)":"var(--bg)",
+      "stroke-width":isN?3:2,opacity:isN?1:.72}));
+  }
+  /* visitante nuevo */
+  g.appendChild(el("circle",{cx:kpx(qx),cy:kpy(qy),r:15,fill:"var(--accent)",stroke:"var(--bg)","stroke-width":3.5}));
+  g.appendChild(el("circle",{cx:kpx(qx),cy:kpy(qy),r:5,fill:"var(--bg)"}));
+  KV.appendChild(g);
+
+  document.getElementById("vK").textContent=k;
+  document.getElementById("k2").textContent=k;
+  document.getElementById("knnYes").textContent=r.yes;
+  document.getElementById("knnNo").textContent=r.no;
+  var pred=document.getElementById("knnPred");
+  pred.textContent=r.yes>r.no?"SÍ":"NO";
+  pred.parentNode.className="stat "+(r.yes>r.no?"g":"e");
+}
+sK.addEventListener("input",drawKnn);
+function moveQ(ev){
+  var b=KV.getBoundingClientRect();
+  var x=(ev.clientX-b.left)/b.width*KW,y=(ev.clientY-b.top)/b.height*KH;
+  qx=Math.max(0,Math.min(XMAX,(x-KM.l)/(KW-KM.l-KM.r)*XMAX));
+  qy=Math.max(0,Math.min(YMAX,(KH-KM.b-y)/(KH-KM.t-KM.b)*YMAX));
+  drawKnn();
+}
+var dragging=false;
+KV.style.touchAction="none";KV.style.cursor="crosshair";
+KV.addEventListener("pointerdown",function(e){dragging=true;KV.setPointerCapture(e.pointerId);moveQ(e)});
+KV.addEventListener("pointermove",function(e){if(dragging)moveQ(e)});
+KV.addEventListener("pointerup",function(){dragging=false});
+KV.addEventListener("pointercancel",function(){dragging=false});
+
+/* --- 01 estimaciones --- */
+var local=[],shown=false;
+var ps=document.getElementById("predStatus");
+function render(list){
+  var h=document.getElementById("hist");
+  document.getElementById("revealRow").hidden=list.length===0;
+  var vals=list.map(function(d){return +d.valor}).filter(function(v){return isFinite(v)});
+  if(!vals.length){h.innerHTML="";return}
+  var lo=Math.floor(Math.min.apply(null,vals)/1000)*1000,hi=Math.ceil(Math.max.apply(null,vals)/1000)*1000;
+  if(hi===lo)hi=lo+1000;
+  var bins=Math.min(10,Math.max(3,Math.round((hi-lo)/1000))),w=(hi-lo)/bins,cnt=[],i;
+  for(i=0;i<bins;i++)cnt.push(0);
+  vals.forEach(function(v){cnt[Math.min(bins-1,Math.floor((v-lo)/w))]++});
+  var mx=Math.max.apply(null,cnt),out="";
+  for(i=0;i<bins;i++)out+='<div class="histbar"><span>'+fmt(lo+i*w)+'</span><div class="bar" style="width:'+(cnt[i]/mx*100)+'%"></div><span class="cnt">'+(cnt[i]||"")+'</span></div>';
+  var avg=vals.reduce(function(a,b){return a+b},0)/vals.length;
+  var err=vals.reduce(function(a,v){return a+Math.abs(v-TRUE_ANSWER)},0)/vals.length;
+  out+='<p class="status">'+vals.length+' estimaci'+(vals.length===1?"ón":"ones")+' · promedio <b style="color:var(--ink)">'+fmt(avg)+'</b><span id="tail"></span></p>';
+  h.innerHTML=out;h.dataset.err=err;
+  if(shown)showTruth();
+}
+function showTruth(){
+  shown=true;
+  var t=document.getElementById("tail");
+  if(t)t.innerHTML=' · desvío promedio <b style="color:var(--accent)">'+fmt(+document.getElementById("hist").dataset.err||0)+'</b>';
+  document.getElementById("notaClase").hidden=false;
+  var b=document.getElementById("verdad");
+  b.textContent="Cerró en "+fmt(TRUE_ANSWER)+" · el modelo predijo $11.989";
+  b.disabled=true;
+}
+document.getElementById("verdad").addEventListener("click",showTruth);
+function submit(){
+  var nom=(document.getElementById("nom").value||"").trim()||"Anónimo",v=+document.getElementById("pred").value;
+  if(!isFinite(v)||v<=0){ps.textContent="Ingresá un monto de facturación.";return}
+  local.push({nombre:nom.slice(0,24),valor:v});
+  ps.textContent=local.length+" cargada"+(local.length===1?"":"s")+" · última: "+fmt(v);
+  document.getElementById("pred").value="";
+  document.getElementById("pred").focus();
+  render(local);
+}
+document.getElementById("enviar").addEventListener("click",submit);
+document.getElementById("pred").addEventListener("keydown",function(e){if(e.key==="Enter")submit()});
+document.getElementById("borrar").addEventListener("click",function(){
+  local=[];shown=false;
+  ps.textContent="Inversión de la próxima semana: $2.500.";
+  var b=document.getElementById("verdad");b.disabled=false;b.textContent="Ver el resultado real";
+  document.getElementById("notaClase").hidden=true;render([]);
+});
+
+drawScatter();drawAnat();drawBrk();drawLogit();drawKnn();
+})();
+</script>
